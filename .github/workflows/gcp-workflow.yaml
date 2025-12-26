@@ -4,7 +4,6 @@ on:
 
 env:
     IMAGE_NAME: reactjs-image-gcp
-    environment: DOCKER_ENV
 
 jobs:
     build-and-push:
