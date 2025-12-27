@@ -11,7 +11,8 @@ const HomePage = () => {
                     <h1 className="display-2 header-title">
                         {" "}
                          {/* Generic Webhook works!! We save planet by planting trees  */}
-                         CICD IS WORKING 
+                         {/* CICD IS WORKING  */}
+                         hello samedi
                     </h1>
                     <p> We are a team of passionate people whose goal is to improve everyone's life through disruptive products. We build great products to solve your business problems.</p>
                     <div className="d-flex pt-5">
