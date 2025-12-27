@@ -1,0 +1,80 @@
+name: CI/CD Docker React to GCP
+
+on:
+    push:
+        branches: ["main"]
+
+env:
+    IMAGE_NAME: reactjs-image-gcp
+
+jobs:
+    build-and-push:
+        runs-on: ubuntu-latest
+        environment: DOCKER_REPOSITORY
+
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v3
+
+            - name: Set TAG from commit SHA
+              run: echo "TAG=${GITHUB_SHA::8}" >> $GITHUB_ENV
+
+            - name: Show TAG value
+              run: echo "TAG=${{ env.TAG }}"
+
+            - name: Login to Docker Hub
+              run: |
+                  echo "${{ secrets.PASSWORD }}" | docker login \
+                    -u "${{ secrets.USERNAME }}" \
+                    --password-stdin
+
+            - name: Build Docker Image
+              run: |
+                  docker build \
+                    -t ${{ secrets.USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.TAG }} .
+
+            - name: Push Docker Image
+              run: |
+                  docker push ${{ secrets.USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+
+            - name: Logout Docker
+              if: always()
+              run: docker logout
+
+    deploy-service:
+        needs: build-and-push
+        runs-on: ubuntu-latest
+        environment: GCP
+
+        steps:
+            - name: Set TAG from commit SHA
+              run: echo "TAG=${GITHUB_SHA::8}" >> $GITHUB_ENV
+
+            - name: Deploy to GCP VM via SSH
+              uses: appleboy/ssh-action@v1.0.0
+              with:
+                  host: ${{ secrets.GCP_IP }}
+                  username: ${{ secrets.GCP_USER }}
+                  key: ${{ secrets.GCP_PRIVATE_KEY }}
+                  envs: TAG,IMAGE_NAME,DOCKER_USERNAME
+                  script: |
+                      echo "Logging in to Docker Hub"
+                      echo "${{ secrets.PASSWORD }}" | docker login \
+                        -u "${{ secrets.USERNAME }}" \
+                        --password-stdin
+
+                      echo "Stopping old container"
+                      docker stop my-app || true
+                      docker rm my-app || true
+
+                      echo "Pulling new image"
+                      docker pull "${{ secrets.USERNAME }}/${IMAGE_NAME}:${TAG}"
+
+                      echo "Running new container"
+                      docker run -d \
+                        --name my-app \
+                        --restart unless-stopped \
+                        -p 3000:80 \
+                        "${{ secrets.USERNAME }}/${IMAGE_NAME}:${TAG}"
+
+                      echo "Deployment successful"
