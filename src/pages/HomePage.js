@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 import "../styles/homepageStyle.css";
 const HomePage = () => {
@@ -11,8 +11,7 @@ const HomePage = () => {
                     <h1 className="display-2 header-title">
                         {" "}
                          {/* Generic Webhook works!! We save planet by planting trees  */}
-                         CICD IS WORKING 
-                         {/* hello samedi */}
+                         CICD IS WORKING at 5:20PM
                     </h1>
                     <p> We are a team of passionate people whose goal is to improve everyone's life through disruptive products. We build great products to solve your business problems.</p>
                     <div className="d-flex pt-5">
